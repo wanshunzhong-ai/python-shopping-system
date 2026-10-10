@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}订单详情{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('shop.index') }}">首页</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('order.order_list') }}">我的订单</a></li>
+    <li class="breadcrumb-item active">订单详情</li>
+  </ol>
+</nav>
+
+<div class="detail-head">
+  <div>
+    <h4 class="mb-1">订单详情</h4>
+    <div class="text-muted small">订单号：{{ order.order_no }} · 下单时间：{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+  </div>
+  <span class="badge fs-6 text-bg-{{ order.status_color }}">{{ order.status_text }}</span>
+</div>
+
+<!-- 状态进度 -->
+<div class="status-track">
+  {% set steps = [('下单', True), ('待发货', order.status in ['pending','shipped','done']),
+                  ('已发货', order.status in ['shipped','done']), ('已完成', order.status == 'done')] %}
+  {% if order.status == 'canceled' %}
+    <div class="alert alert-secondary mb-0"><i class="bi bi-x-circle"></i> 该订单已取消</div>
+  {% else %}
+    {% for label, done in steps %}
+    <div class="status-step {% if done %}done{% endif %}">
+      <div class="dot">{% if done %}<i class="bi bi-check"></i>{% endif %}</div>
+      <div class="label">{{ label }}</div>
+    </div>
+    {% if not loop.last %}<div class="status-line {% if done %}done{% endif %}"></div>{% endif %}
+    {% endfor %}
+  {% endif %}
+</div>
+
+<div class="row g-4 mt-1">
+  <div class="col-lg-8">
+    <div class="form-card">
+      <h6 class="form-card-title"><i class="bi bi-box-seam"></i> 商品清单</h6>
+      <div class="checkout-items">
+        {% for it in order.items %}
+        <div class="checkout-item">
+          <img src="{{ it.product_image | img }}" alt="{{ it.product_name }}">
+          <div class="ci-main">
+            <div class="ci-name">
+              {% if it.product_id %}
+                <a href="{{ url_for('shop.product_detail', product_id=it.product_id) }}">{{ it.product_name }}</a>
+              {% else %}{{ it.product_name }}{% endif %}
+            </div>
+            <div class="text-muted small">{{ currency }}{{ it.price | money }} × {{ it.quantity }}</div>
+          </div>
+          <div class="ci-sub">{{ currency }}{{ it.subtotal | money }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="order-amount-line">
+        <span>商品总额</span><span>{{ currency }}{{ order.total_amount | money }}</span>
+      </div>
+      <div class="order-amount-line">
+        <span>运费</span><span class="text-success">免运费</span>
+      </div>
+      <div class="order-amount-line total">
+        <span>实付款</span>
+        <span class="text-danger fs-4 fw-bold">{{ currency }}{{ order.total_amount | money }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="form-card">
+      <h6 class="form-card-title"><i class="bi bi-geo-alt"></i> 收货信息</h6>
+      <div class="info-line"><span>收货人</span><b>{{ order.receiver_name }}</b></div>
+      <div class="info-line"><span>联系电话</span><b>{{ order.receiver_phone }}</b></div>
+      <div class="info-line"><span>收货地址</span><b>{{ order.receiver_address }}</b></div>
+      <div class="info-line"><span>支付方式</span><b>{{ order.payment_method }}</b></div>
+      {% if order.remark %}
+      <div class="info-line"><span>订单备注</span><b>{{ order.remark }}</b></div>
+      {% endif %}
+    </div>
+
+    <div class="d-grid gap-2 mt-3">
+      {% if order.status == 'pending' %}
+        <form action="{{ url_for('order.cancel', order_id=order.id) }}" method="post"
+              onsubmit="return confirm('确定取消该订单吗？')">
+          <button class="btn btn-outline-danger w-100"><i class="bi bi-x-circle"></i> 取消订单</button>
+        </form>
+      {% elif order.status == 'shipped' %}
+        <form action="{{ url_for('order.confirm_receive', order_id=order.id) }}" method="post"
+              onsubmit="return confirm('确认已收到商品吗？')">
+          <button class="btn btn-success w-100"><i class="bi bi-check2-circle"></i> 确认收货</button>
+        </form>
+      {% endif %}
+      <a href="{{ url_for('order.order_list') }}" class="btn btn-outline-secondary w-100">
+        <i class="bi bi-arrow-left"></i> 返回订单列表
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

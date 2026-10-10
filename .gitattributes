@@ -1,0 +1,15 @@
+# 统一换行符，避免跨平台协作时的无意义改动
+* text=auto eol=lf
+
+# 明确二进制文件
+*.woff binary
+*.woff2 binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.db binary
+
+# Windows 批处理需要 CRLF
+*.bat text eol=crlf

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site_name }}{% endblock %} · {{ site_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg shop-navbar sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('shop.index') }}">
+      <span class="brand-mark">优</span>
+      <span class="brand-text">{{ site_name }}</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint == 'shop.index' %}active{% endif %}"
+             href="{{ url_for('shop.index') }}">首页</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint == 'shop.product_list' and not current_category %}active{% endif %}"
+             href="{{ url_for('shop.product_list') }}">全部商品</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">商品分类</a>
+          <ul class="dropdown-menu">
+            {% for c in nav_categories if nav_categories is defined %}
+            {% endfor %}
+            {% for c in (nav_categories or []) %}
+            <li><a class="dropdown-item" href="{{ url_for('shop.product_list', category=c.id) }}">{{ c.icon }} {{ c.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+      </ul>
+
+      <form class="d-flex search-box me-lg-3" action="{{ url_for('shop.product_list') }}" method="get" role="search">
+        <i class="bi bi-search"></i>
+        <input class="form-control" type="search" name="q" placeholder="搜索商品…"
+               value="{{ keyword or '' }}" aria-label="搜索">
+      </form>
+
+      <ul class="navbar-nav align-items-lg-center">
+        <li class="nav-item">
+          <a class="nav-link position-relative cart-link" href="{{ url_for('cart.view_cart') }}">
+            <i class="bi bi-cart3 fs-5"></i>
+            <span class="cart-badge" id="cartBadge" {% if not cart_count %}style="display:none"{% endif %}>{{ cart_count }}</span>
+          </a>
+        </li>
+        {% if current_user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle"></i> {{ current_user.nickname or current_user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="bi bi-person"></i> 个人中心</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('order.order_list') }}"><i class="bi bi-receipt"></i> 我的订单</a></li>
+            {% if current_user.is_admin %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-primary" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> 后台管理</a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">登录</a></li>
+        <li class="nav-item ms-lg-2">
+          <a class="btn btn-primary btn-sm px-3" href="{{ url_for('auth.register') }}">注册</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+{% block hero %}{% endblock %}
+
+<main class="container my-4 page-main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack">
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show shadow-sm" role="alert">
+          {% if category == 'success' %}<i class="bi bi-check-circle-fill me-1"></i>
+          {% elif category == 'danger' %}<i class="bi bi-x-circle-fill me-1"></i>
+          {% elif category == 'warning' %}<i class="bi bi-exclamation-triangle-fill me-1"></i>
+          {% else %}<i class="bi bi-info-circle-fill me-1"></i>{% endif %}
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="shop-footer">
+  <div class="container">
+    <div class="row gy-4">
+      <div class="col-lg-4">
+        <div class="footer-brand"><span class="brand-mark">优</span> {{ site_name }}</div>
+        <p class="text-muted mt-2 mb-0" style="max-width:320px">{{ site_slogan }}。精选全球好物，正品保障、极速发货、七天无理由退换。</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6>购物指南</h6>
+        <ul class="footer-links">
+          <li><a href="{{ url_for('shop.product_list') }}">全部商品</a></li>
+          <li><a href="{{ url_for('order.order_list') }}">我的订单</a></li>
+          <li><a href="{{ url_for('cart.view_cart') }}">购物车</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h6>服务保障</h6>
+        <ul class="footer-links">
+          <li>正品保障</li>
+          <li>极速发货</li>
+          <li>七天无理由</li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h6>支付方式</h6>
+        <p class="text-muted small mb-2">支持在线支付、货到付款等多种方式</p>
+        <div class="d-flex gap-2 fs-3 text-secondary">
+          <i class="bi bi-credit-card"></i>
+          <i class="bi bi-wallet2"></i>
+          <i class="bi bi-cash-coin"></i>
+        </div>
+      </div>
+    </div>
+    <hr class="mt-4">
+    <div class="text-center text-muted small">
+      © 2026 {{ site_name }} · 基于 Python Flask 构建的演示项目
+    </div>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

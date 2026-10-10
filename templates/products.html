@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}全部商品{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('shop.index') }}">首页</a></li>
+    <li class="breadcrumb-item active">全部商品</li>
+    {% if current_cat %}<li class="breadcrumb-item active">{{ current_cat.name }}</li>{% endif %}
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <!-- 侧边栏 -->
+  <aside class="col-lg-3">
+    <div class="side-panel">
+      <h6 class="side-title"><i class="bi bi-grid-3x3-gap"></i> 商品分类</h6>
+      <ul class="side-cat-list">
+        <li>
+          <a href="{{ url_for('shop.product_list', q=keyword, sort=sort) }}"
+             class="{% if not current_category %}active{% endif %}">
+            全部商品 <span class="badge rounded-pill text-bg-light">{{ pagination.total if not current_category else '' }}</span>
+          </a>
+        </li>
+        {% for c in categories %}
+        <li>
+          <a href="{{ url_for('shop.product_list', category=c.id, q=keyword, sort=sort) }}"
+             class="{% if current_category == c.id %}active{% endif %}">
+            <span>{{ c.icon }} {{ c.name }}</span>
+            <span class="badge rounded-pill text-bg-light">{{ c.products.count() }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="side-panel mt-3">
+      <h6 class="side-title"><i class="bi bi-sort-down"></i> 排序方式</h6>
+      <ul class="side-cat-list">
+        {% for value, label in [('default','综合排序'), ('sales','销量优先'), ('new','最新上架'), ('price_asc','价格从低到高'), ('price_desc','价格从高到低')] %}
+        <li>
+          <a href="{{ url_for('shop.product_list', category=current_category, q=keyword, sort=value) }}"
+             class="{% if sort == value %}active{% endif %}">{{ label }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+
+  <!-- 商品列表 -->
+  <div class="col-lg-9">
+    <div class="section-head mb-3">
+      <h2 class="h5 mb-0">
+        {% if keyword %}<i class="bi bi-search"></i> “{{ keyword }}”
+        {% elif current_cat %}{{ current_cat.icon }} {{ current_cat.name }}
+        {% else %}<i class="bi bi-grid"></i> 全部商品{% endif %}
+      </h2>
+      <span class="text-muted small">共 {{ pagination.total }} 件商品</span>
+    </div>
+
+    {% if products %}
+    <div class="row row-cols-2 row-cols-md-3 g-3">
+      {% for p in products %}
+        {% include "_product_card.html" %}
+      {% endfor %}
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <nav class="mt-4">
+      <ul class="pagination justify-content-center">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('shop.product_list', page=pagination.prev_num, q=keyword, category=current_category, sort=sort) }}">上一页</a>
+        </li>
+        {% for n in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+          {% if n %}
+            <li class="page-item {% if n == pagination.page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('shop.product_list', page=n, q=keyword, category=current_category, sort=sort) }}">{{ n }}</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('shop.product_list', page=pagination.next_num, q=keyword, category=current_category, sort=sort) }}">下一页</a>
+        </li>
+      </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-inbox"></i>
+      <p>没有找到符合条件的商品</p>
+      <a href="{{ url_for('shop.product_list') }}" class="btn btn-outline-primary btn-sm">查看全部商品</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

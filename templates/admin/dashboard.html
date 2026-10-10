@@ -1,0 +1,132 @@
+{% extends "admin/base.html" %}
+{% block title %}数据概览{% endblock %}
+{% block page_title %}数据概览{% endblock %}
+{% block page_desc %}商城的整体运营情况一览{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-1">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card grad-1">
+      <div class="stat-icon"><i class="bi bi-currency-yen"></i></div>
+      <div class="stat-value">{{ currency }}{{ stats.total_sales | money }}</div>
+      <div class="stat-label">累计销售额</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card grad-2">
+      <div class="stat-icon"><i class="bi bi-receipt"></i></div>
+      <div class="stat-value">{{ stats.order_count }}</div>
+      <div class="stat-label">订单总数</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card grad-3">
+      <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+      <div class="stat-value">{{ stats.product_count }}</div>
+      <div class="stat-label">在售商品</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card grad-4">
+      <div class="stat-icon"><i class="bi bi-people"></i></div>
+      <div class="stat-value">{{ stats.user_count }}</div>
+      <div class="stat-label">注册用户</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-6 col-lg-3">
+    <div class="mini-stat">
+      <span class="dot bg-warning"></span> 待发货
+      <b>{{ status_counts.get('pending', 0) }}</b>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="mini-stat">
+      <span class="dot bg-info"></span> 待收货
+      <b>{{ status_counts.get('shipped', 0) }}</b>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="mini-stat">
+      <span class="dot bg-success"></span> 已完成
+      <b>{{ status_counts.get('done', 0) }}</b>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="mini-stat">
+      <span class="dot bg-secondary"></span> 已取消
+      <b>{{ status_counts.get('canceled', 0) }}</b>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mt-2">
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-head">
+        <h6><i class="bi bi-clock-history"></i> 最近订单</h6>
+        <a href="{{ url_for('admin.orders') }}" class="small">全部 <i class="bi bi-chevron-right"></i></a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 admin-table">
+          <thead><tr><th>订单号</th><th>客户</th><th>金额</th><th>状态</th><th>时间</th></tr></thead>
+          <tbody>
+          {% for o in recent_orders %}
+            <tr>
+              <td class="text-nowrap">{{ o.order_no }}</td>
+              <td>{{ o.user.nickname or o.user.username }}</td>
+              <td class="text-danger">{{ currency }}{{ o.total_amount | money }}</td>
+              <td><span class="badge text-bg-{{ o.status_color }}">{{ o.status_text }}</span></td>
+              <td class="text-muted small text-nowrap">{{ o.created_at.strftime('%m-%d %H:%M') }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-4">暂无订单</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-head">
+        <h6><i class="bi bi-trophy"></i> 热销商品 Top 5</h6>
+      </div>
+      <div class="rank-list">
+        {% for p in top_products %}
+        <div class="rank-item">
+          <span class="rank-no rank-{{ loop.index }}">{{ loop.index }}</span>
+          <img src="{{ p.image | img }}" alt="">
+          <div class="rank-info">
+            <div class="rank-name">{{ p.name }}</div>
+            <div class="text-muted small">销量 {{ p.sales }}</div>
+          </div>
+          <div class="rank-price">{{ currency }}{{ p.price | money }}</div>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">暂无数据</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="panel mt-3">
+      <div class="panel-head">
+        <h6><i class="bi bi-exclamation-triangle text-warning"></i> 库存预警（≤10）</h6>
+      </div>
+      <div class="lowstock-list">
+        {% for p in low_stock %}
+        <div class="lowstock-item">
+          <span class="text-truncate" style="max-width:220px">{{ p.name }}</span>
+          <span class="badge {% if p.stock == 0 %}text-bg-danger{% else %}text-bg-warning{% endif %}">剩 {{ p.stock }} 件</span>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-3">库存充足 👍</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

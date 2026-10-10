@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}注册{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-head">
+      <h3>创建账号</h3>
+      <p class="text-muted mb-0">注册即可享受正品好物与极速发货</p>
+    </div>
+    <form method="post">
+      <div class="mb-3">
+        <label class="form-label">用户名</label>
+        <div class="input-icon">
+          <i class="bi bi-person"></i>
+          <input type="text" name="username" class="form-control" required
+                 value="{{ username or '' }}" placeholder="3-20 位中英文、数字或下划线">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">邮箱</label>
+        <div class="input-icon">
+          <i class="bi bi-envelope"></i>
+          <input type="email" name="email" class="form-control" required
+                 value="{{ email or '' }}" placeholder="example@mail.com">
+        </div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-sm-6">
+          <label class="form-label">密码</label>
+          <div class="input-icon">
+            <i class="bi bi-lock"></i>
+            <input type="password" name="password" class="form-control" required placeholder="至少 6 位">
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">确认密码</label>
+          <div class="input-icon">
+            <i class="bi bi-shield-lock"></i>
+            <input type="password" name="confirm" class="form-control" required placeholder="再次输入密码">
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary w-100 btn-lg">注册</button>
+    </form>
+    <div class="auth-alt">
+      已有账号？<a href="{{ url_for('auth.login') }}">去登录</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

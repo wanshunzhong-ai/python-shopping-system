@@ -1,0 +1,100 @@
+{% extends "admin/base.html" %}
+{% block title %}订单管理{% endblock %}
+{% block page_title %}订单管理{% endblock %}
+{% block page_desc %}共 {{ pagination.total }} 笔订单{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-head">
+    <form class="d-flex gap-2 flex-wrap" method="get">
+      <input type="text" name="q" class="form-control form-control-sm" style="width:220px"
+             placeholder="搜索订单号" value="{{ keyword }}">
+      <select name="status" class="form-select form-select-sm" style="width:140px">
+        <option value="">全部状态</option>
+        {% for key, (label, color) in status_map.items() %}
+        <option value="{{ key }}" {% if current_status == key %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i> 查询</button>
+      {% if keyword or current_status %}
+      <a href="{{ url_for('admin.orders') }}" class="btn btn-sm btn-outline-secondary">重置</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 admin-table">
+      <thead>
+        <tr>
+          <th>订单号</th>
+          <th>客户</th>
+          <th>商品</th>
+          <th class="text-end">金额</th>
+          <th>收货信息</th>
+          <th class="text-center">状态</th>
+          <th class="text-center" style="width:170px">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for o in orders %}
+        <tr>
+          <td class="text-nowrap">
+            <div class="fw-medium">{{ o.order_no }}</div>
+            <div class="text-muted small">{{ o.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+          </td>
+          <td>{{ o.user.nickname or o.user.username }}</td>
+          <td>
+            <div class="text-truncate" style="max-width:220px">
+              {{ o.items[0].product_name if o.items }}{% if o.items | length > 1 %}
+                <span class="text-muted">等 {{ o.items | length }} 种</span>{% endif %}
+            </div>
+            <div class="text-muted small">共 {{ o.total_quantity }} 件</div>
+          </td>
+          <td class="text-end text-danger fw-medium">{{ currency }}{{ o.total_amount | money }}</td>
+          <td>
+            <div>{{ o.receiver_name }} {{ o.receiver_phone }}</div>
+            <div class="text-muted small text-truncate" style="max-width:200px">{{ o.receiver_address }}</div>
+          </td>
+          <td class="text-center"><span class="badge text-bg-{{ o.status_color }}">{{ o.status_text }}</span></td>
+          <td class="text-center text-nowrap">
+            <a href="{{ url_for('order.detail', order_id=o.id) }}" target="_blank"
+               class="btn btn-sm btn-outline-secondary" title="查看详情"><i class="bi bi-eye"></i></a>
+            {% if o.status == 'pending' %}
+            <form action="{{ url_for('admin.order_ship', order_id=o.id) }}" method="post" class="d-inline">
+              <button class="btn btn-sm btn-primary" title="发货"><i class="bi bi-truck"></i> 发货</button>
+            </form>
+            {% endif %}
+            <form action="{{ url_for('admin.order_delete', order_id=o.id) }}" method="post" class="d-inline"
+                  onsubmit="return confirm('确定删除该订单吗？')">
+              <button class="btn btn-sm btn-outline-danger" title="删除"><i class="bi bi-trash3"></i></button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-5">暂无订单数据</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if pagination.pages > 1 %}
+<nav class="mt-3">
+  <ul class="pagination pagination-sm justify-content-center mb-0">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('admin.orders', page=pagination.prev_num, q=keyword, status=current_status) }}">上一页</a>
+    </li>
+    {% for n in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if n %}
+        <li class="page-item {% if n == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('admin.orders', page=n, q=keyword, status=current_status) }}">{{ n }}</a>
+        </li>
+      {% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('admin.orders', page=pagination.next_num, q=keyword, status=current_status) }}">下一页</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

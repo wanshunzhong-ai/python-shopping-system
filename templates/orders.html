@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}我的订单{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('shop.index') }}">首页</a></li>
+    <li class="breadcrumb-item active">我的订单</li>
+  </ol>
+</nav>
+
+<div class="section-head">
+  <h2><i class="bi bi-receipt"></i> 我的订单</h2>
+  <span class="text-muted small">共 {{ pagination.total }} 笔</span>
+</div>
+
+<div class="order-tabs">
+  <a class="order-tab {% if not current_status %}active{% endif %}"
+     href="{{ url_for('order.order_list') }}">全部</a>
+  {% for key, (label, color) in status_map.items() %}
+  <a class="order-tab {% if current_status == key %}active{% endif %}"
+     href="{{ url_for('order.order_list', status=key) }}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+{% if orders %}
+<div class="order-list">
+  {% for o in orders %}
+  <div class="order-card">
+    <div class="order-card-head">
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <span class="order-no">订单号：{{ o.order_no }}</span>
+        <span class="text-muted small">{{ o.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+      </div>
+      <span class="badge text-bg-{{ o.status_color }}">{{ o.status_text }}</span>
+    </div>
+    <div class="order-card-body">
+      <div class="order-items">
+        {% for it in o.items %}
+        <div class="order-item">
+          <img src="{{ it.product_image | img }}" alt="{{ it.product_name }}">
+          <div>
+            <div class="oi-name">{{ it.product_name }}</div>
+            <div class="text-muted small">{{ currency }}{{ it.price | money }} × {{ it.quantity }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="order-total">
+        <div class="text-muted small">共 {{ o.total_quantity }} 件</div>
+        <div class="fs-5 fw-bold text-danger">{{ currency }}{{ o.total_amount | money }}</div>
+        <a href="{{ url_for('order.detail', order_id=o.id) }}" class="btn btn-outline-primary btn-sm mt-2">查看详情</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if pagination.pages > 1 %}
+<nav class="mt-4">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('order.order_list', page=pagination.prev_num, status=current_status) }}">上一页</a>
+    </li>
+    {% for n in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if n %}
+        <li class="page-item {% if n == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('order.order_list', page=n, status=current_status) }}">{{ n }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('order.order_list', page=pagination.next_num, status=current_status) }}">下一页</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <i class="bi bi-receipt"></i>
+  <p>还没有相关订单</p>
+  <a href="{{ url_for('shop.product_list') }}" class="btn btn-primary btn-sm">去逛逛</a>
+</div>
+{% endif %}
+{% endblock %}

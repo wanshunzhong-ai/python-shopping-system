@@ -1,0 +1,36 @@
+<div class="col">
+  <div class="product-card h-100">
+    <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="product-thumb">
+      <img src="{{ p.image | img }}" alt="{{ p.name }}" loading="lazy">
+      {% if p.discount and p.discount < 10 %}
+        <span class="tag-discount">{{ p.discount }}折</span>
+      {% endif %}
+      {% if p.stock <= 0 %}
+        <span class="tag-soldout">已售罄</span>
+      {% elif p.stock <= 10 %}
+        <span class="tag-low">仅剩 {{ p.stock }} 件</span>
+      {% endif %}
+    </a>
+    <div class="product-body">
+      <a href="{{ url_for('shop.product_detail', product_id=p.id) }}" class="product-name">{{ p.name }}</a>
+      <div class="product-summary">{{ p.summary }}</div>
+      <div class="product-price-row">
+        <span class="price"><span class="cur">{{ currency }}</span>{{ p.price | money }}</span>
+        {% if p.original_price and p.original_price > p.price %}
+          <span class="price-origin">{{ currency }}{{ p.original_price | money }}</span>
+        {% endif %}
+      </div>
+      <div class="product-meta">
+        <span><i class="bi bi-fire"></i> 已售 {{ p.sales }}</span>
+        {% if p.category %}<span class="text-muted">{{ p.category.icon }} {{ p.category.name }}</span>{% endif %}
+      </div>
+      <form action="{{ url_for('cart.add_to_cart', product_id=p.id) }}" method="post" class="mt-auto cart-ajax">
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="next" value="{{ request.full_path }}">
+        <button class="btn btn-primary btn-sm w-100 add-cart-btn" {% if p.stock <= 0 %}disabled{% endif %}>
+          <i class="bi bi-cart-plus"></i> {% if p.stock <= 0 %}已售罄{% else %}加入购物车{% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

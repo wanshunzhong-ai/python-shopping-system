@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}后台管理{% endblock %} · {{ site_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+<div class="admin-layout">
+
+  <aside class="admin-sidebar">
+    <div class="admin-brand">
+      <span class="brand-mark">优</span>
+      <span>{{ site_name }}<small>管理后台</small></span>
+    </div>
+    <nav class="admin-nav">
+      <a href="{{ url_for('admin.dashboard') }}" class="{% if admin_section == 'admin.dashboard' %}active{% endif %}">
+        <i class="bi bi-speedometer2"></i> 数据概览
+      </a>
+      <a href="{{ url_for('admin.products') }}" class="{% if admin_section in ['admin.products','admin.product_create','admin.product_edit'] %}active{% endif %}">
+        <i class="bi bi-box-seam"></i> 商品管理
+      </a>
+      <a href="{{ url_for('admin.categories') }}" class="{% if admin_section == 'admin.categories' %}active{% endif %}">
+        <i class="bi bi-tags"></i> 分类管理
+      </a>
+      <a href="{{ url_for('admin.orders') }}" class="{% if admin_section == 'admin.orders' %}active{% endif %}">
+        <i class="bi bi-receipt"></i> 订单管理
+      </a>
+      <a href="{{ url_for('admin.users') }}" class="{% if admin_section == 'admin.users' %}active{% endif %}">
+        <i class="bi bi-people"></i> 用户管理
+      </a>
+      <hr>
+      <a href="{{ url_for('shop.index') }}" target="_blank"><i class="bi bi-shop"></i> 返回商城</a>
+      <a href="{{ url_for('auth.logout') }}" class="text-danger"><i class="bi bi-box-arrow-right"></i> 退出登录</a>
+    </nav>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <h5 class="mb-0">{% block page_title %}后台管理{% endblock %}</h5>
+        <div class="text-muted small">{% block page_desc %}{% endblock %}</div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-muted small d-none d-md-inline">
+          <i class="bi bi-person-circle"></i> {{ current_user.nickname or current_user.username }}
+        </span>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+              {{ msg }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

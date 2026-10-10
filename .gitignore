@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# 数据库
+instance/*.db
+*.sqlite3
+
+# 上传的图片（保留目录）
+static/uploads/*
+!static/uploads/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# 智能体工作数据
+.workbuddy/
+
+# 系统
+.DS_Store
+Thumbs.db

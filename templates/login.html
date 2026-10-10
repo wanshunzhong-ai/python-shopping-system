@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}登录{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-head">
+      <h3>欢迎回来</h3>
+      <p class="text-muted mb-0">登录后即可管理购物车与订单</p>
+    </div>
+    <form method="post">
+      <input type="hidden" name="next" value="{{ request.args.get('next','') }}">
+      <div class="mb-3">
+        <label class="form-label">用户名 / 邮箱</label>
+        <div class="input-icon">
+          <i class="bi bi-person"></i>
+          <input type="text" name="account" class="form-control" required autofocus
+                 value="{{ account or '' }}" placeholder="请输入用户名或邮箱">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">密码</label>
+        <div class="input-icon">
+          <i class="bi bi-lock"></i>
+          <input type="password" name="password" class="form-control" required placeholder="请输入密码">
+        </div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="remember" id="remember">
+          <label class="form-check-label" for="remember">记住我</label>
+        </div>
+      </div>
+      <button class="btn btn-primary w-100 btn-lg">登录</button>
+    </form>
+    <div class="auth-alt">
+      还没有账号？<a href="{{ url_for('auth.register') }}">立即注册</a>
+    </div>
+    <div class="auth-demo">
+      <div class="text-muted small mb-1"><i class="bi bi-info-circle"></i> 演示账号</div>
+      <div class="demo-row"><span>管理员</span><code>admin / admin123</code></div>
+      <div class="demo-row"><span>普通用户</span><code>demo / 123456</code></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

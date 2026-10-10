@@ -1,0 +1,95 @@
+{% extends "admin/base.html" %}
+{% block title %}用户管理{% endblock %}
+{% block page_title %}用户管理{% endblock %}
+{% block page_desc %}共 {{ pagination.total }} 位用户{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-head">
+    <form class="d-flex gap-2" method="get">
+      <input type="text" name="q" class="form-control form-control-sm" style="width:220px"
+             placeholder="搜索用户名 / 邮箱" value="{{ keyword }}">
+      <button class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i> 查询</button>
+      {% if keyword %}<a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-secondary">重置</a>{% endif %}
+    </form>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 admin-table">
+      <thead>
+        <tr>
+          <th style="width:70px">ID</th>
+          <th>用户</th>
+          <th>邮箱</th>
+          <th>手机号</th>
+          <th class="text-center">订单数</th>
+          <th class="text-center">角色</th>
+          <th class="text-center">状态</th>
+          <th class="text-center" style="width:110px">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td class="text-muted">{{ u.id }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="avatar-xs">{{ (u.nickname or u.username)[0] | upper }}</span>
+              <div>
+                <div class="fw-medium">{{ u.nickname or u.username }}</div>
+                <div class="text-muted small">@{{ u.username }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="text-muted small">{{ u.email }}</td>
+          <td class="text-muted small">{{ u.phone or '-' }}</td>
+          <td class="text-center">{{ u.orders.count() }}</td>
+          <td class="text-center">
+            {% if u.is_admin %}<span class="badge text-bg-danger">管理员</span>
+            {% else %}<span class="badge text-bg-light">普通用户</span>{% endif %}
+          </td>
+          <td class="text-center">
+            {% if u.is_active_user %}<span class="badge text-bg-success">正常</span>
+            {% else %}<span class="badge text-bg-secondary">已禁用</span>{% endif %}
+          </td>
+          <td class="text-center">
+            {% if u.id != current_user.id %}
+            <form action="{{ url_for('admin.user_toggle', user_id=u.id) }}" method="post">
+              <button class="btn btn-sm btn-outline-{% if u.is_active_user %}danger{% else %}success{% endif %}">
+                {% if u.is_active_user %}<i class="bi bi-slash-circle"></i> 禁用
+                {% else %}<i class="bi bi-check-circle"></i> 启用{% endif %}
+              </button>
+            </form>
+            {% else %}
+            <span class="text-muted small">当前账号</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-5">暂无用户数据</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if pagination.pages > 1 %}
+<nav class="mt-3">
+  <ul class="pagination pagination-sm justify-content-center mb-0">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('admin.users', page=pagination.prev_num, q=keyword) }}">上一页</a>
+    </li>
+    {% for n in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if n %}
+        <li class="page-item {% if n == pagination.page %}active{% endif %}">
+          <a class="page-link" href="{{ url_for('admin.users', page=n, q=keyword) }}">{{ n }}</a>
+        </li>
+      {% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      <a class="page-link" href="{{ url_for('admin.users', page=pagination.next_num, q=keyword) }}">下一页</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

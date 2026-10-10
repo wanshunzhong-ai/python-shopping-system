@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}结算{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('shop.index') }}">首页</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('cart.view_cart') }}">购物车</a></li>
+    <li class="breadcrumb-item active">确认订单</li>
+  </ol>
+</nav>
+
+<div class="section-head">
+  <h2><i class="bi bi-receipt-cutoff"></i> 确认订单</h2>
+</div>
+
+<form method="post">
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="form-card">
+      <h6 class="form-card-title"><i class="bi bi-geo-alt"></i> 收货信息</h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">收货人 <span class="text-danger">*</span></label>
+          <input type="text" name="receiver_name" class="form-control" required
+                 value="{{ current_user.nickname or current_user.username }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">联系电话 <span class="text-danger">*</span></label>
+          <input type="text" name="receiver_phone" class="form-control" required
+                 placeholder="11 位手机号" value="{{ current_user.phone or '' }}">
+        </div>
+        <div class="col-12">
+          <label class="form-label">收货地址 <span class="text-danger">*</span></label>
+          <input type="text" name="receiver_address" class="form-control" required
+                 placeholder="省 / 市 / 区 + 详细地址" value="{{ current_user.address or '' }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card mt-3">
+      <h6 class="form-card-title"><i class="bi bi-credit-card"></i> 支付方式</h6>
+      <div class="pay-options">
+        <label class="pay-option">
+          <input type="radio" name="payment_method" value="在线支付" checked>
+          <span class="pay-body"><i class="bi bi-credit-card-2-front"></i> 在线支付</span>
+        </label>
+        <label class="pay-option">
+          <input type="radio" name="payment_method" value="货到付款">
+          <span class="pay-body"><i class="bi bi-cash-coin"></i> 货到付款</span>
+        </label>
+        <label class="pay-option">
+          <input type="radio" name="payment_method" value="余额支付">
+          <span class="pay-body"><i class="bi bi-wallet2"></i> 余额支付</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-card mt-3">
+      <h6 class="form-card-title"><i class="bi bi-chat-left-text"></i> 订单备注</h6>
+      <textarea name="remark" class="form-control" rows="2"
+                placeholder="选填，如对发货时间、包装等有特殊要求"></textarea>
+    </div>
+
+    <div class="form-card mt-3">
+      <h6 class="form-card-title"><i class="bi bi-bag"></i> 商品清单</h6>
+      <div class="checkout-items">
+        {% for it in items %}
+        <div class="checkout-item">
+          <img src="{{ it.product.image | img }}" alt="{{ it.product.name }}">
+          <div class="ci-main">
+            <div class="ci-name">{{ it.product.name }}</div>
+            <div class="text-muted small">{{ currency }}{{ it.product.price | money }} × {{ it.quantity }}</div>
+          </div>
+          <div class="ci-sub">{{ currency }}{{ it.subtotal | money }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="summary-card sticky-lg-top" style="top:90px">
+      <h5>订单摘要</h5>
+      <div class="summary-row"><span>商品件数</span><span>{{ cart_count }} 件</span></div>
+      <div class="summary-row"><span>商品金额</span><span>{{ currency }}{{ total | money }}</span></div>
+      <div class="summary-row"><span>运费</span><span class="text-success">免运费</span></div>
+      <hr>
+      <div class="summary-row total"><span>应付总额</span>
+        <span class="text-danger">{{ currency }}{{ total | money }}</span></div>
+      <button type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+        <i class="bi bi-check2-circle"></i> 提交订单
+      </button>
+      <p class="text-muted small text-center mt-2 mb-0">提交即表示同意《用户购买协议》</p>
+    </div>
+  </div>
+</div>
+</form>
+{% endblock %}

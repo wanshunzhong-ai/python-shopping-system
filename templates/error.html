@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ code }}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+  <div class="error-code">{{ code }}</div>
+  <h4>{{ message }}</h4>
+  <p class="text-muted">抱歉，你访问的页面暂时无法显示</p>
+  <div class="d-flex gap-2 justify-content-center">
+    <a href="{{ url_for('shop.index') }}" class="btn btn-primary"><i class="bi bi-house"></i> 返回首页</a>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary">返回上一页</a>
+  </div>
+</div>
+{% endblock %}
